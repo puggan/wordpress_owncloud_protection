@@ -136,26 +136,40 @@ class Owncloud_User_Status_Widget extends WP_Widget
 
 		echo $widget_args['before_widget'];
 
-		if($show_username)
-		{
-			echo "<p>User: {$GLOBALS['oc_protect']->user_id}</p>";
-		}
+		echo "<p><b>Owncloud user</b></p>";
 		
-		if($show_groups)
+		if($GLOBALS['oc_protect']->user_id)
 		{
-			if($GLOBALS['oc_protect']->groups)
+			if($show_username)
 			{
-				echo "<p>Groups: " . implode(", ", $GLOBALS['oc_protect']->groups) . "</p>";
+				echo "<p>User: {$GLOBALS['oc_protect']->user_id}</p>";
 			}
-			else
+			
+			if($show_groups)
 			{
-				echo "<p>Groups: (none)</p>";
+				if($GLOBALS['oc_protect']->groups)
+				{
+					echo "<p>Groups: " . implode(", ", $GLOBALS['oc_protect']->groups) . "</p>";
+				}
+				else
+				{
+					echo "<p>Groups: (none)</p>";
+				}
+			}
+			
+			if($show_link AND $GLOBALS['oc_protect']->settings['oc url'])
+			{
+				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc url']}'>Show filelist</a></p>";
 			}
 		}
-		
-		if($show_link)
+		else
 		{
-			echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc url']}'>Show filelist</a></p>";
+			echo "<p>Not logged in</p>";
+			
+			if($GLOBALS['oc_protect']->settings['oc url'])
+			{
+				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc url']}'>Login</a></p>";
+			}
 		}
 		
 		echo $widget_args['after_widget'];
