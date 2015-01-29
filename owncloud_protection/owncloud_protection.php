@@ -30,8 +30,8 @@ class oc_protect
 		
 		// Fake settings
 		{
-			$this->settings['global block'] = TRUE;
-			$this->settings['oc url'] = "/";
+			$this->settings['global block'] = get_option("oc_protect_global_block", TRUE);
+			$this->settings['oc url']  = get_option("oc_protect_url", "/");
 		}
 		
 		$old_session = session_id();
