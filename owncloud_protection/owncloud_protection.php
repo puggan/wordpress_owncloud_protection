@@ -80,7 +80,7 @@ class oc_protect
 			return;
 		}
 
-		$oc_groups = $wpdb->get_col($wpdb->prepare("SELECT gid FROM oc_group_user WHERE uid = %s", $oc_user_id));
+		$oc_groups = $wpdb->get_col($wpdb->prepare("SELECT gid FROM oc_group_user WHERE uid = %s", $this->user_id));
 		$this->groups = array_combine($oc_groups, $oc_groups);
 	}
 	
