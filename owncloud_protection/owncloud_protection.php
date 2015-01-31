@@ -177,7 +177,8 @@ class oc_protect
 	{
 		if($this->settings['login_oc_url'])
 		{
-			header("Location: " . str_replace("%1", home_url(), $this->settings['login_oc_url']));
+			$home_url_parts = parse_url(home_url());
+			header("Location: " . str_replace("%1", "{$home_url_parts['path']}?{$home_url_parts['query']}", $this->settings['login_oc_url']));
 			wp_die("Logged out from owncloud.", "Logged out", array("response" => 307));
 		}
 		wp_die("Logged out from owncloud", "Logged out", array("response" => 200));
