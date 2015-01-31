@@ -21,6 +21,7 @@ class oc_protect
 	public $settings = NULL;
 	public $oc_cookie_name = NULL;
 	public $user_id = NULL;
+	public $admin = NULL;
 	public $groups = NULL;
 	public $error = NULL;
 
@@ -87,6 +88,11 @@ class oc_protect
 		$oc_groups = $wpdb->get_col($wpdb->prepare("SELECT gid FROM oc_group_user WHERE uid = %s", $this->user_id));
 
 		$this->groups = array_combine($oc_groups, $oc_groups);
+
+		if($this->user_id == 'root' OR isset($this->groups['admin']))
+		{
+			$this->admin = TRUE;
+		}
 	}
 
 	public function check_permission($target)
@@ -107,7 +113,7 @@ class oc_protect
 
 		if(!is_array($targets))
 		{
-			$targets = explode(" ", str_replace(",", " ", $permission[$ptype]));
+			$targets = explode(" ", str_replace(",", " ", $targets));
 		}
 
 		foreach($targets as $current_target)
@@ -133,6 +139,9 @@ class oc_protect
 		add_action('widgets_init', array($this, 'register_widgets'));
 		add_action('add_meta_boxes_page', array($this, 'register_meta_box'));
 		add_action('save_post', array($this, 'save_page_permissions'));
+		add_filter('posts_results', array($this, 'filter_posts'), 10, 2);
+		add_filter('wp_nav_menu_objects', array($this, 'filter_menu'));
+		add_action('post_edit_form_tag', array($this, 'filter_edit_page'));
 	}
 
 	public function set_current_user($a = NULL, $b = NULL, $c = NULL)
@@ -248,6 +257,67 @@ class oc_protect
 		update_post_meta($page_id, '_oc_read_permission', $read_permission);
 		update_post_meta($page_id, '_oc_edit_permission', $edit_permission);
 	}
+
+	public function filter_posts($posts, $query_object)
+	{
+// 		if(!$this->admin)
+		if($this->user_id != 'root')
+		{
+			foreach($posts as $index => $current_post)
+			{
+				if($current_post->post_type == 'page')
+				{
+					$read_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
+					if($read_permission)
+					{
+						if(!$this->check_permission_list($read_permission))
+						{
+							unset($posts[$index]);
+						}
+					}
+				}
+			}
+		}
+
+		return $posts;
+	}
+
+	public function filter_menu($menu)
+	{
+// 		if(!$this->admin)
+		if($this->user_id != 'root')
+		{
+			foreach($menu as $index => $current_menu)
+			{
+				if($current_menu->object == 'page')
+				{
+
+					$read_permission = get_post_meta($current_menu->object_id, '_oc_read_permission', TRUE);
+					if($read_permission)
+					{
+						if(!$this->check_permission_list($read_permission))
+						{
+							unset($menu[$index]);
+						}
+					}
+				}
+			}
+		}
+
+		return $menu;
+	}
+
+	public function filter_edit_page($current_post)
+	{
+// 		if($this->admin)
+		if($this->user_id == 'root') return TRUE;
+		if($current_post->post_type != 'page') return TRUE;
+		$edit_permission = get_post_meta($current_post->ID, '_oc_edit_permission', TRUE);
+		if(!$edit_permission) $edit_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
+		if(!$edit_permission) return TRUE;
+		if($this->check_permission_list($edit_permission)) return TRUE;
+		wp_die("Permission denied, you not allowed to edit this page.", "Permission denied", array("response" => 403));
+	}
 }
 
 class Owncloud_User_Status_Widget extends WP_Widget
@@ -304,6 +374,42 @@ class Owncloud_User_Status_Widget extends WP_Widget
 			if($GLOBALS['oc_protect']->settings['oc_url'])
 			{
 				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc_url']}'>Login</a></p>";
+			}
+		}
+
+		/// DEBUG
+		if(TRUE)
+		{
+			if(isset($GLOBALS['post']) AND $GLOBALS['post']->post_type == 'page')
+			{
+				echo "<p>Page: {$GLOBALS['post']->ID}</p>";
+
+				$permission_html['read'] = array();
+				$permission_html['edit'] = array();
+				$permission['read'] = get_post_meta($GLOBALS['post']->ID, '_oc_read_permission', TRUE);
+				$permission['edit'] = get_post_meta($GLOBALS['post']->ID, '_oc_edit_permission', TRUE);
+
+				foreach(array('read', 'edit') as $ptype)
+				{
+					foreach(explode(" ", str_replace(",", " ", $permission[$ptype])) as $current_target)
+					{
+						$current_target = trim($current_target);
+						if(!$current_target) continue;
+
+						if($GLOBALS['oc_protect']->check_permission($current_target))
+						{
+							$permission_html[$ptype][] = "<b>" . $current_target . "</b>";
+						}
+						else
+						{
+							$permission_html[$ptype][] = "<span>" . $current_target . "</span>";
+						}
+					}
+				}
+
+				echo "<p>Read: " . implode(", ", $permission_html['read']) . "</p>";
+				echo "<p>Edit: " . implode(", ", $permission_html['edit']) . "</p>";
+
 			}
 		}
 
