@@ -12,8 +12,6 @@ Author: Puggan
 Author URI: http://blog.puggan.se
 */
 
-// TODO: check if there actions/filters in current_user_can
-
 DEFINE("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '0.0.1');
 
 class oc_protect
@@ -29,12 +27,9 @@ class oc_protect
 	{
 		global $wpdb;
 
-		// Fake settings
-		{
-			$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
-			$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
-			$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/?redirect_url=%1");
-		}
+		$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
+		$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
+		$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/?redirect_url=%1");
 
 		$old_session_id = session_id();
 
@@ -224,11 +219,9 @@ class oc_protect
 
 	public function meta_box_page_edit($current_post)
 	{
-		// TODO read about get_post_meta + update_post_meta
 		$read_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
 		$edit_permission = get_post_meta($current_post->ID, '_oc_edit_permission', TRUE);
 
-		// TODO read about wp_nonce_field + wp_verify_nonce + sanitize_text_field
 		wp_nonce_field( 'oc_permission', 'oc_permission_nonce' );
 
 		echo "<div>";
