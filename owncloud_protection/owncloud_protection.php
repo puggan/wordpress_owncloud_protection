@@ -33,7 +33,7 @@ class oc_protect
 
 		// Fake settings
 		{
-			$this->settings['global block'] = get_option("oc_protect_global_block", TRUE);
+			$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
 			$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
 			$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/");
 		}
@@ -136,6 +136,7 @@ class oc_protect
 		add_action('clear_auth_cookie', array($this, 'clear_cookie'));
 		add_action('wp_logout', array($this, 'logout'));
 		add_action('init', array($this, 'global_block_test'));
+		add_action('admin_menu', array($this, 'register_setting_page'));
 		add_action('widgets_init', array($this, 'register_widgets'));
 		add_action('add_meta_boxes_page', array($this, 'register_meta_box'));
 		add_action('save_post', array($this, 'save_page_permissions'));
@@ -192,17 +193,17 @@ class oc_protect
 
 	public function global_block_test()
 	{
-		if(!$this->user_id AND $this->settings['global block'])
+		if(!$this->user_id AND $this->settings['global_block'])
 		{
 			if($this->settings['login_oc_url'])
 			{
 				header("Location: {$this->settings['login_oc_url']}");
-				wp_die("Permission denied, global block for non owncloud users. " . $this->error, "Permission denied", array("response" => 307));
+				wp_die("Permission denied, global_block for non owncloud users. " . $this->error, "Permission denied", array("response" => 307));
 				die();
 			}
 			else
 			{
-				wp_die("Permission denied, global block for non owncloud users. " . $this->error, "Permission denied", array("response" => 403));
+				wp_die("Permission denied, global_block for non owncloud users. " . $this->error, "Permission denied", array("response" => 403));
 				die();
 			}
 		}
@@ -216,6 +217,11 @@ class oc_protect
 	public function register_meta_box()
 	{
 		add_meta_box("oc_page_permission", "Owncloud permissions", array($this, "meta_box_page_edit"), 'page', 'side');
+	}
+
+	public function register_setting_page()
+	{
+		add_submenu_page("options-general.php", "Owncloud protection settings", "Owncloud", 'manage_options', "owncloud-prot", array($this, "setting_page"));
 	}
 
 	public function meta_box_page_edit($current_post)
@@ -256,6 +262,59 @@ class oc_protect
 		// Update the meta field in the database.
 		update_post_meta($page_id, '_oc_read_permission', $read_permission);
 		update_post_meta($page_id, '_oc_edit_permission', $edit_permission);
+	}
+
+	public function setting_page()
+	{
+		echo '<div class="wrap"><div id="icon-tools" class="icon32"></div>';
+		echo '<h2>Owncloud protection settings</h2>';
+		echo '<form method="post" action="">';
+		echo '</div>';
+
+		if(!current_user_can('manage_options'))
+		{
+			wp_die(__('You do not have sufficient permissions to access this page.'));
+		}
+
+		wp_nonce_field( 'owncloud-prot-settings', 'owncloud_prot_settings_nonce' );
+
+		if($_POST['save'])
+		{
+			if(wp_verify_nonce($_POST['owncloud_prot_settings_nonce'], 'owncloud-prot-settings'))
+			{
+				update_option("oc_protect_global_block", $_POST["oc_protect_global_block"]);
+				update_option("oc_protect_login_url", $_POST["oc_protect_login_url"]);
+				update_option("oc_protect_url", $_POST["oc_protect_url"]);
+
+				$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
+				$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
+				$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/");
+
+				echo '<div class="updated"><p><strong>Settings saved</strong></p></div>';
+			}
+		}
+
+		echo "<div>";
+		echo "<label for='oc_protect_global_block' style='width: 100px; display: inline-block;'>Guests</label>";
+		echo "<select name='oc_protect_global_block'>";
+		echo "<option value='0'" . ($this->settings['global_block'] ? '' : " selected='selected'") . ">Allow guests</option>";
+		echo "<option value='1'" . ($this->settings['global_block'] ? " selected='selected'" : '') . ">Only loggedin users</option>";
+		echo "</select>";
+		echo "</div>";
+
+		echo "<div>";
+		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>Login url</label>";
+		echo "<input name='oc_protect_login_url' value='{$this->settings['login_oc_url']}' />";
+		echo "</div>";
+
+		echo "<div>";
+		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>App url</label>";
+		echo "<input name='oc_protect_url' value='{$this->settings['oc_url']}' />";
+		echo "</div>";
+
+		echo "<input type='submit' name='save' class='button-primary' value='Save' />";
+		echo "</form>";
+		echo "</div>";
 	}
 
 	public function filter_posts($posts, $query_object)
