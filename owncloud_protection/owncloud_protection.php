@@ -34,7 +34,7 @@ class oc_protect
 		// Fake settings
 		{
 			$this->settings['global block'] = get_option("oc_protect_global_block", TRUE);
-			$this->settings['oc_url'] = get_option("oc_protect_url", "/");
+			$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
 			$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/");
 		}
 
