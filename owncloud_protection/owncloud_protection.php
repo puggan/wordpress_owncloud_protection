@@ -29,13 +29,11 @@ class oc_protect
 	{
 		global $wpdb;
 
-		/// TODO: load settings
-
 		// Fake settings
 		{
 			$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
 			$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
-			$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/");
+			$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/?redirect_url=%1");
 		}
 
 		$old_session_id = session_id();
@@ -184,7 +182,7 @@ class oc_protect
 	{
 		if($this->settings['login_oc_url'])
 		{
-			header("Location: {$this->settings['login_oc_url']}");
+			header("Location: " . str_replace("%1", home_url(), $this->settings['login_oc_url']));
 			wp_die("Logged out from owncloud.", "Logged out", array("response" => 307));
 		}
 		wp_die("Logged out from owncloud", "Logged out", array("response" => 200));
@@ -197,7 +195,7 @@ class oc_protect
 		{
 			if($this->settings['login_oc_url'])
 			{
-				header("Location: {$this->settings['login_oc_url']}");
+				header("Location: " . str_replace("%1", $_SERVER['REQUEST_URI'], $this->settings['login_oc_url']));
 				wp_die("Permission denied, global_block for non owncloud users. " . $this->error, "Permission denied", array("response" => 307));
 				die();
 			}
