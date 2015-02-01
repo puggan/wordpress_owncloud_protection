@@ -83,6 +83,11 @@ msgstr[1] ""
 msgid "Saved, but no changes was made"
 msgstr ""
 
+#: owncloud_protection.php:530
+msgctxt "input label"
+msgid "Guests"
+msgstr ""
+
 #: owncloud_protection.php:532
 msgctxt "settings value"
 msgid "Allow guests"
@@ -204,18 +209,6 @@ msgstr ""
 msgid "Owncloud Protection"
 msgstr ""
 
-#. Plugin URI of the plugin/theme
-msgid "https://github.com/puggan/wordpress_owncloud_protection"
-msgstr ""
-
 #. Description of the plugin/theme
 msgid "Use owncloud as permission check for pages"
-msgstr ""
-
-#. Author of the plugin/theme
-msgid "Puggan"
-msgstr ""
-
-#. Author URI of the plugin/theme
-msgid "http://blog.puggan.se"
 msgstr ""

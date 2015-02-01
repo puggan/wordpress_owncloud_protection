@@ -527,7 +527,7 @@ class oc_protect
 
 		// add option for global_block, allow guest or not
 		echo "<div>";
-		echo "<label for='oc_protect_global_block' style='width: 100px; display: inline-block;'>Guests</label>";
+		echo "<label for='oc_protect_global_block' style='width: 100px; display: inline-block;'>" . _x('Guests', 'input label', 'owncloud_protection') . "</label>";
 		echo "<select name='oc_protect_global_block'>";
 		echo "<option value='0'" . ($this->settings['global_block'] ? '' : " selected='selected'") . ">" . _x('Allow guests', 'settings value', 'owncloud_protection') . "</option>";
 		echo "<option value='1'" . ($this->settings['global_block'] ? " selected='selected'" : '') . ">" . _x('Only loggedin users', 'settings value', 'owncloud_protection') . "</option>";
