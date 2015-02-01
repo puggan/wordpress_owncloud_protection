@@ -11,6 +11,8 @@ Description: Use owncloud as permission check for pages
 Version: 1.0.0-20150201
 Author: Puggan
 Author URI: http://blog.puggan.se
+Text Domain: owncloud_protection
+Domain Path: /lang
 */
 
 // Set a constant for current version
@@ -58,7 +60,7 @@ class oc_protect
 		if(!$this->oc_cookie_name)
 		{
 			// then we can't do anything more
-			$this->error = "No oc-cookie found";
+			$this->error = __('No oc-cookie found', 'owncloud_protection');
 			return;
 		}
 
@@ -85,13 +87,13 @@ class oc_protect
 		if(!$result)
 		{
 			// store failer
-			$this->error = "session_start() failed";
+			$this->error = __('session_start() failed', 'owncloud_protection');
 		}
 		// if the owncloud session have a user_id
 		else if(empty($_SESSION))
 		{
 			// store failer
-			$this->error = "\$_SESSION is empty";
+			$this->error = __('$_SESSION is empty', 'owncloud_protection');
 		}
 		// if the owncloud session have a user_id
 		else if(isset($_SESSION['user_id']) AND $_SESSION['user_id'])
@@ -102,7 +104,7 @@ class oc_protect
 		else
 		{
 			// then we not logged in, preper canceling
-			$this->error = "No user_id found";
+			$this->error = __('No user_id found', 'owncloud_protection' );
 		}
 
 		// close owncloud session
@@ -138,7 +140,7 @@ class oc_protect
 			$this->groups = array();
 
 			// copy error message
-			$this->error = "DB-error: " . $wpdb->last_error;
+			$this->error = __('DB-error:', 'owncloud_protection') . ' ' . $wpdb->last_error;
 		}
 		else
 		{
@@ -243,6 +245,9 @@ class oc_protect
 		add_filter('posts_results', array($this, 'filter_posts'), 10, 2);
 		add_filter('wp_nav_menu_objects', array($this, 'filter_menu'));
 		add_action('post_edit_form_tag', array($this, 'filter_edit_page'));
+
+		$plugin_dir = basename(dirname(__FILE__));
+		load_plugin_textdomain('owncloud_protection', NULL, $plugin_dir . '/lang');
 	}
 
 	/**
@@ -345,13 +350,13 @@ class oc_protect
 			header("Location: " . str_replace("%1", "{$home_url_parts['path']}?{$home_url_parts['query']}", $this->settings['login_oc_url']));
 
 			// kill wordpress, using http-code 307, for temporary redirect
-			wp_die("Logged out from owncloud.", "Logged out", array("response" => 307));
+			wp_die(__('Logged out from owncloud.', 'owncloud_protection'), __('Logged out', 'owncloud_protection'), array("response" => 307));
 		}
 		// if we have not owncloud login page
 		else
 		{
 			// kill wordpress, using http-code 200, for "ok", as this wasn't a error
-			wp_die("Logged out from owncloud", "Logged out", array("response" => 200));
+			wp_die(__('Logged out from owncloud.', 'owncloud_protection'), __('Logged out', 'owncloud_protection'), array("response" => 200));
 		}
 	}
 
@@ -370,12 +375,12 @@ class oc_protect
 				header("Location: " . str_replace("%1", $_SERVER['REQUEST_URI'], $this->settings['login_oc_url']));
 
 				// kill wordpress, using http-code 307, for temporary redirect
-				wp_die("Permission denied, global_block for non owncloud users. " . $this->error, "Permission denied", array("response" => 307));
+				wp_die(__('Permission denied, global_block for non owncloud users.', 'owncloud_protection') . ' ' . $this->error, "Permission denied", array("response" => 307));
 			}
 			else
 			{
 				// kill wordpress, using http-code 403, for "permission denied"
-				wp_die("Permission denied, global_block for non owncloud users. " . $this->error, "Permission denied", array("response" => 403));
+				wp_die(__('Permission denied, global_block for non owncloud users.', 'owncloud_protection') . ' ' . $this->error, "Permission denied", array("response" => 403));
 			}
 
 			// make sure the execution dies, in case wp_die() failed
@@ -388,7 +393,7 @@ class oc_protect
 	 **/
 	public function register_widgets()
 	{
-		register_widget( 'Owncloud_User_Status_Widget' );
+		register_widget('Owncloud_User_Status_Widget');
 	}
 
 	/**
@@ -396,7 +401,7 @@ class oc_protect
 	 **/
 	public function register_meta_box()
 	{
-		add_meta_box("oc_page_permission", "Owncloud permissions", array($this, "meta_box_page_edit"), 'page', 'side');
+		add_meta_box("oc_page_permission", _x('Owncloud permissions', 'metabox title', 'owncloud_protection'), array($this, "meta_box_page_edit"), 'page', 'side');
 	}
 
 	/**
@@ -404,7 +409,7 @@ class oc_protect
 	 **/
 	public function register_setting_page()
 	{
-		add_submenu_page("options-general.php", "Owncloud protection settings", "Owncloud", 'manage_options', "owncloud-prot", array($this, "setting_page"));
+		add_submenu_page("options-general.php", __('Owncloud protection settings', 'owncloud_protection'), _x('Owncloud', 'menu row', 'owncloud_protection'), 'manage_options', "owncloud-prot", array($this, "setting_page"));
 	}
 
 	/**
@@ -423,13 +428,13 @@ class oc_protect
 
 		// add a input for read permission
 		echo "<div>";
-		echo '<label for="oc_read_permission">Read permission:</label> ';
+		echo '<label for="oc_read_permission">' . _x('Read permission', 'input label', 'owncloud_protection') . ':</label> ';
 		echo '<input type="text" id="oc_read_permission" name="oc_read_permission" value="' . esc_attr($read_permission) . '" />';
 		echo "</div>";
 
 		// add a input for edit permission
 		echo "<div>";
-		echo '<label for="oc_edit_permission">Edit permission:</label> ';
+		echo '<label for="oc_edit_permission">' . _x('Edit permission', 'input label', 'owncloud_protection') . ':</label> ';
 		echo '<input type="text" id="oc_edit_permission" name="oc_edit_permission" value="' . esc_attr($edit_permission) . '" />';
 		echo "</div>";
 	}
@@ -466,11 +471,12 @@ class oc_protect
 	public function setting_page()
 	{
 		// Add title/header
-		echo '<h2>Owncloud protection settings</h2>';
+		echo '<h2>' . __('Owncloud protection settings', 'owncloud_protection') . '</h2>';
 
 		// show error if permission deined
 		if(!current_user_can('manage_options'))
 		{
+			// NOTICE: using global wordpress translation
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
 
@@ -501,12 +507,14 @@ class oc_protect
 					$this->settings['oc_db_prefix'] = get_option("oc_db_prefix", DEFAULT_OPTION_OWNCLOUD_DATABASE_PREFIX);
 
 					// Tell user we saved the fields
-					echo "<div class='updated'><p><strong>Settings saved, {$changes} changed</strong></p></div>";
+					echo "<div class='updated'><p><strong>";
+					echo sprint_f(_n('Settings saved, %d value changed', 'Settings saved, %d values changed', $changes, 'owncloud_protection'), $changes);
+					echo "</strong></p></div>";
 				}
 				else
 				{
 					// Tell user we tried to saved the fields
-					echo "<div class='updated'><p><strong>Saved, but no changes was made</strong></p></div>";
+					echo "<div class='updated'><p><strong>" . __('Saved, but no changes was made', 'owncloud_protection') . "</strong></p></div>";
 				}
 			}
 		}
@@ -521,32 +529,32 @@ class oc_protect
 		echo "<div>";
 		echo "<label for='oc_protect_global_block' style='width: 100px; display: inline-block;'>Guests</label>";
 		echo "<select name='oc_protect_global_block'>";
-		echo "<option value='0'" . ($this->settings['global_block'] ? '' : " selected='selected'") . ">Allow guests</option>";
-		echo "<option value='1'" . ($this->settings['global_block'] ? " selected='selected'" : '') . ">Only loggedin users</option>";
+		echo "<option value='0'" . ($this->settings['global_block'] ? '' : " selected='selected'") . ">" . _x('Allow guests', 'settings value', 'owncloud_protection') . "</option>";
+		echo "<option value='1'" . ($this->settings['global_block'] ? " selected='selected'" : '') . ">" . _x('Only loggedin users', 'settings value', 'owncloud_protection') . "</option>";
 		echo "</select>";
 		echo "</div>";
 
 		// add field for login url
 		echo "<div>";
-		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>Login url</label>";
+		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>" . _x('Login url', 'input leabel', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_protect_login_url' value='" . esc_attr($this->settings['login_oc_url']) . "' />";
 		echo "</div>";
 
 		// add field for owncloud url
 		echo "<div>";
-		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>App url</label>";
+		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>" . _x('App url', 'input leabel', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_protect_url' value='" . esc_attr($this->settings['oc_url']) . "' />";
 		echo "</div>";
 
 		// add field for oc_db_prefix
 		echo "<div>";
-		echo "<label for='oc_db_prefix' style='width: 100px; display: inline-block;'>DB Prefix</label>";
+		echo "<label for='oc_db_prefix' style='width: 100px; display: inline-block;'>" . _x('DB Prefix', 'input leabel', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_db_prefix' value='" . esc_attr($this->settings['oc_db_prefix']) . "' />";
 		echo "</div>";
 
 		// add button
 		echo "<div>";
-		echo "<input type='submit' name='save' class='button-primary' value='Save' />";
+		echo "<input type='submit' name='save' class='button-primary' value='" . esc_attr(_x('Save', 'button', 'owncloud_protection')) . "' />";
 		echo "</div>";
 
 		// end form
@@ -659,7 +667,7 @@ class oc_protect
 		if($this->check_permission_list($edit_permission)) return TRUE;
 
 		// Disable edit if there was no reason to allow edit, using code 403 'Permission Denied'
-		wp_die("Permission denied, you not allowed to edit this page.", "Permission denied", array("response" => 403));
+		wp_die(__('Permission denied, you not allowed to edit this page.', 'owncloud_protection'), __('Permission denied', 'owncloud_protection'), array("response" => 403));
 	}
 }
 
@@ -675,8 +683,8 @@ class Owncloud_User_Status_Widget extends WP_Widget
 	{
 		parent::__construct(
 			'owncloud_user_status_widget', // Base ID
-			'Owncloud user status', // Name
-			array('description' => 'Show status for loged in owncloud user', ) // Args
+			_x('Owncloud user status', 'widget name', 'owncloud_protection'), // Name
+			array('description' => __('Show status for loged in owncloud user', 'owncloud_protection'), ) // Args
 		);
 	}
 
@@ -701,7 +709,7 @@ class Owncloud_User_Status_Widget extends WP_Widget
 			if(isset($instance['show_username']) AND $instance['show_username'])
 			{
 				// show username
-				echo "<p>User: {$GLOBALS['oc_protect']->user_id}</p>";
+				echo "<p>" . _x('User', 'label', 'owncloud_protection') . ": {$GLOBALS['oc_protect']->user_id}</p>";
 			}
 
 			// check option for show_groups
@@ -711,12 +719,12 @@ class Owncloud_User_Status_Widget extends WP_Widget
 				if($GLOBALS['oc_protect']->groups)
 				{
 					// show groups
-					echo "<p>Groups: " . implode(", ", $GLOBALS['oc_protect']->groups) . "</p>";
+					echo "<p>" . _x('Groups', 'label', 'owncloud_protection') . ": " . implode(", ", $GLOBALS['oc_protect']->groups) . "</p>";
 				}
 				else
 				{
 					// show error, use italic, to make it more noticable that its not a group named none
-					echo "<p>Groups: <i>(none)</i></p>";
+					echo "<p>" . _x('Groups', 'label', 'owncloud_protection') . ": <i>" . _x('(none)', 'group count', 'owncloud_protection') . "</i></p>";
 				}
 			}
 
@@ -724,14 +732,14 @@ class Owncloud_User_Status_Widget extends WP_Widget
 			if(isset($instance['show_link']) AND $instance['show_link'] AND $GLOBALS['oc_protect']->settings['oc_url'])
 			{
 				// show link
-				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc_url']}'>Show filelist</a></p>";
+				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc_url']}'>" . _x('Show filelist', 'link', 'owncloud_protection') . "</a></p>";
 			}
 		}
 		// if we aren't logged in
 		else
 		{
 			// write error insted of user
-			echo "<p>Not logged in</p>";
+			echo "<p>" . _x('Not logged in', 'error', 'owncloud_protection') . "</p>";
 
 			// if we have a url to loginpage
 			if($GLOBALS['oc_protect']->settings['login_oc_url'])
@@ -740,7 +748,7 @@ class Owncloud_User_Status_Widget extends WP_Widget
 				$login_url = str_replace("%1", $_SERVER['REQUEST_URI'], $GLOBALS['oc_protect']->settings['login_oc_url']);
 
 				// write link to login url
-				echo "<p><a href='{$login_url}'>Login</a></p>";
+				echo "<p><a href='{$login_url}'>" . _x('Login', 'link', 'owncloud_protection') . "</a></p>";
 			}
 		}
 
@@ -751,7 +759,7 @@ class Owncloud_User_Status_Widget extends WP_Widget
 			if(isset($GLOBALS['post']) AND $GLOBALS['post']->post_type == 'page')
 			{
 				// tell user what page we are on, using ID
-				echo "<p>Page: {$GLOBALS['post']->ID}</p>";
+				echo "<p>" . _x('Page', 'label', 'owncloud_protection') . ": {$GLOBALS['post']->ID}</p>";
 
 				// make list for saving html of targets
 				$permission_html['read'] = array();
@@ -788,15 +796,15 @@ class Owncloud_User_Status_Widget extends WP_Widget
 				}
 
 				// write both list as html
-				echo "<p>Read: " . implode(", ", $permission_html['read']) . "</p>";
-				echo "<p>Edit: " . implode(", ", $permission_html['edit']) . "</p>";
+				echo "<p>" . _x('Read', 'label permissionlist', 'owncloud_protection') . ": " . implode(", ", $permission_html['read']) . "</p>";
+				echo "<p>" . _x('Edit', 'label permissionlist', 'owncloud_protection') . ": " . implode(", ", $permission_html['edit']) . "</p>";
 			}
 
 			// if error has occured
 			if($GLOBALS['oc_protect']->error)
 			{
 				// dispaly last error
-				echo "<p>Error: {$GLOBALS['oc_protect']->error}</p>";
+				echo "<p>" . _x('Error', 'label', 'owncloud_protection') . ": {$GLOBALS['oc_protect']->error}</p>";
 			}
 		}
 
@@ -815,25 +823,25 @@ class Owncloud_User_Status_Widget extends WP_Widget
 		// define filed show_username
 		$fields['username']['id'] = $this->get_field_id('show_username');
 		$fields['username']['name'] = $this->get_field_name( 'show_username' );
-		$fields['username']['title'] = "Show username";
+		$fields['username']['title'] = _x('Show username', 'label setting', 'owncloud_protection');
 		$fields['username']['value'] = (isset($instance['show_username']) ? $instance['show_username'] : TRUE);
 
 		// define filed show_groups
 		$fields['groups']['id'] = $this->get_field_id('show_groups');
 		$fields['groups']['name'] = $this->get_field_name( 'show_groups' );
-		$fields['groups']['title'] = "Show groups";
+		$fields['groups']['title'] = _x('Show groups', 'label setting', 'owncloud_protection');
 		$fields['groups']['value'] = (isset($instance['show_groups']) ? $instance['show_groups'] : TRUE);
 
 		// define filed show_link
 		$fields['link']['id'] = $this->get_field_id('show_link');
 		$fields['link']['name'] = $this->get_field_name( 'show_link' );
-		$fields['link']['title'] = "Show link";
+		$fields['link']['title'] = _x('Show link', 'label setting', 'owncloud_protection');
 		$fields['link']['value'] = (isset($instance['show_link']) ? $instance['show_link'] : TRUE);
 
 		// define filed show_debug
 		$fields['debug']['id'] = $this->get_field_id('show_debug');
 		$fields['debug']['name'] = $this->get_field_name( 'show_debug' );
-		$fields['debug']['title'] = "Debug info";
+		$fields['debug']['title'] = _x('Debug info', 'label setting', 'owncloud_protection');
 		$fields['debug']['value'] = (isset($instance['show_debug']) ? $instance['show_debug'] : FALSE);
 
 		// foreach field
