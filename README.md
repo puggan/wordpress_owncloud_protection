@@ -4,6 +4,8 @@ Wordpress pluing for protection pages using ownclouds users and groups
 # Requirment
 * wordpress and owncloud
 * the wordpress need to be able to read ownclouds cookies, so put both on the same domian
+* the wordpress need to be able to share session, so use same session-handerl and session.save_path
+* the plugin need to look up grous in database, so at them moment the need to share database
 * use the same name for owncloud user and wordpress user. (i like to call the admins in both for 'root')
 
 # Install

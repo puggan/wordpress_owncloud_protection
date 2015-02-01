@@ -19,6 +19,7 @@ define("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '1.0.0');
 define("DEFAULT_OPTION_OWNCLOUD_BLOCK", FALSE);
 define("DEFAULT_OPTION_LOGIN_URL", "/?redirect_url=%1");
 define("DEFAULT_OPTION_OWNCLOUD_URL", "/index.php/apps/files/");
+define("DEFAULT_OPTION_OWNCLOUD_DATABASE_PREFIX", "oc_");
 
 class oc_protect
 {
@@ -39,6 +40,7 @@ class oc_protect
 		$this->settings['global_block'] = get_option("oc_protect_global_block", DEFAULT_OPTION_OWNCLOUD_BLOCK);
 		$this->settings['login_oc_url'] = get_option("oc_protect_login_url", DEFAULT_OPTION_LOGIN_URL);
 		$this->settings['oc_url'] = get_option("oc_protect_url", DEFAULT_OPTION_OWNCLOUD_URL);
+		$this->settings['oc_db_prefix'] = get_option("oc_db_prefix", DEFAULT_OPTION_OWNCLOUD_DATABASE_PREFIX);
 
 		// look for a owncloud session cookie
 		foreach(array_keys($_COOKIE) AS $cookie_key)
@@ -77,10 +79,22 @@ class oc_protect
 		$old_session_name = session_name($this->oc_cookie_name);
 
 		// start the owncloud session
-		session_start();
+		$result = session_start();
 
+		// if session didn't start
+		if(!$result)
+		{
+			// store failer
+			$this->error = "session_start() failed";
+		}
 		// if the owncloud session have a user_id
-		if(isset($_SESSION['user_id']) AND $_SESSION['user_id'])
+		else if(empty($_SESSION))
+		{
+			// store failer
+			$this->error = "\$_SESSION is empty";
+		}
+		// if the owncloud session have a user_id
+		else if(isset($_SESSION['user_id']) AND $_SESSION['user_id'])
 		{
 			// remember that user_id
 			$this->user_id = $_SESSION['user_id'];
@@ -110,7 +124,7 @@ class oc_protect
 		}
 
 		// ask database for the groups of the current owncloud user
-		$oc_groups = $wpdb->get_col($wpdb->prepare("SELECT gid FROM oc_group_user WHERE uid = %s", $this->user_id));
+		$oc_groups = $wpdb->get_col($wpdb->prepare("SELECT gid FROM {$this->settings['oc_db_prefix']}group_user WHERE uid = %s", $this->user_id));
 
 		// if we found groups
 		if($oc_groups)
@@ -472,6 +486,7 @@ class oc_protect
 				$results[] = update_option("oc_protect_global_block", $_POST["oc_protect_global_block"]);
 				$results[] = update_option("oc_protect_login_url", $_POST["oc_protect_login_url"]);
 				$results[] = update_option("oc_protect_url", $_POST["oc_protect_url"]);
+				$results[] = update_option("oc_db_prefix", $_POST["oc_db_prefix"]);
 
 				//count changes
 				$changes = array_sum($results);
@@ -483,6 +498,7 @@ class oc_protect
 					$this->settings['global_block'] = get_option("oc_protect_global_block", DEFAULT_OPTION_OWNCLOUD_BLOCK);
 					$this->settings['login_oc_url'] = get_option("oc_protect_login_url", DEFAULT_OPTION_LOGIN_URL);
 					$this->settings['oc_url'] = get_option("oc_protect_url", DEFAULT_OPTION_OWNCLOUD_URL);
+					$this->settings['oc_db_prefix'] = get_option("oc_db_prefix", DEFAULT_OPTION_OWNCLOUD_DATABASE_PREFIX);
 
 					// Tell user we saved the fields
 					echo "<div class='updated'><p><strong>Settings saved, {$changes} changed</strong></p></div>";
@@ -499,7 +515,7 @@ class oc_protect
 		echo '<form method="post" action="">';
 
 		// add a nonce field for extra protection
-		wp_nonce_field( 'owncloud-prot-settings', 'owncloud_prot_settings_nonce' );
+		wp_nonce_field('owncloud-prot-settings', 'owncloud_prot_settings_nonce');
 
 		// add option for global_block, allow guest or not
 		echo "<div>";
@@ -520,6 +536,12 @@ class oc_protect
 		echo "<div>";
 		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>App url</label>";
 		echo "<input name='oc_protect_url' value='" . esc_attr($this->settings['oc_url']) . "' />";
+		echo "</div>";
+
+		// add field for oc_db_prefix
+		echo "<div>";
+		echo "<label for='oc_db_prefix' style='width: 100px; display: inline-block;'>DB Prefix</label>";
+		echo "<input name='oc_db_prefix' value='" . esc_attr($this->settings['oc_db_prefix']) . "' />";
 		echo "</div>";
 
 		// add button
@@ -768,6 +790,13 @@ class Owncloud_User_Status_Widget extends WP_Widget
 				// write both list as html
 				echo "<p>Read: " . implode(", ", $permission_html['read']) . "</p>";
 				echo "<p>Edit: " . implode(", ", $permission_html['edit']) . "</p>";
+			}
+
+			// if error has occured
+			if($GLOBALS['oc_protect']->error)
+			{
+				// dispaly last error
+				echo "<p>Error: {$GLOBALS['oc_protect']->error}</p>";
 			}
 		}
 
