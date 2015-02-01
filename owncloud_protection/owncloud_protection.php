@@ -641,8 +641,14 @@ class oc_protect
 	}
 }
 
+/**
+ * Widget for showing info about Owncloud user and link to files
+ **/
 class Owncloud_User_Status_Widget extends WP_Widget
 {
+	/**
+	 * register widget name when the widgets are created
+	 **/
 	public function __construct()
 	{
 		parent::__construct(
@@ -652,26 +658,20 @@ class Owncloud_User_Status_Widget extends WP_Widget
 		);
 	}
 
-	public function widget( $widget_args, $instance )
+	public function widget($widget_args, $instance)
 	{
-		extract( shortcode_atts( array(
-			'show_username' => TRUE,
-			'show_groups' => TRUE,
-			'show_link' => TRUE,
-		), $instance ) );
-
 		echo $widget_args['before_widget'];
 
 		echo "{$widget_args['before_title']}Owncloud user{$widget_args['after_title']}";
 
 		if($GLOBALS['oc_protect']->user_id)
 		{
-			if($show_username)
+			if(isset($instance['show_username']) AND $instance['show_username'])
 			{
 				echo "<p>User: {$GLOBALS['oc_protect']->user_id}</p>";
 			}
 
-			if($show_groups)
+			if(isset($instance['show_groups']) AND $instance['show_groups'])
 			{
 				if($GLOBALS['oc_protect']->groups)
 				{
@@ -683,7 +683,7 @@ class Owncloud_User_Status_Widget extends WP_Widget
 				}
 			}
 
-			if($show_link AND $GLOBALS['oc_protect']->settings['oc_url'])
+			if(isset($instance['show_link']) AND $instance['show_link'] AND $GLOBALS['oc_protect']->settings['oc_url'])
 			{
 				echo "<p><a href='{$GLOBALS['oc_protect']->settings['oc_url']}'>Show filelist</a></p>";
 			}
@@ -698,8 +698,7 @@ class Owncloud_User_Status_Widget extends WP_Widget
 			}
 		}
 
-		/// DEBUG
-		if(TRUE)
+		if(isset($instance['show_debug']) AND $instance['show_debug'])
 		{
 			if(isset($GLOBALS['post']) AND $GLOBALS['post']->post_type == 'page')
 			{
@@ -755,6 +754,11 @@ class Owncloud_User_Status_Widget extends WP_Widget
 		$fields['link']['title'] = "Show link";
 		$fields['link']['value'] = (isset($instance['show_link']) ? $instance['show_link'] : TRUE);
 
+		$fields['debug']['id'] = $this->get_field_id('show_debug');
+		$fields['debug']['name'] = $this->get_field_name( 'show_debug' );
+		$fields['debug']['title'] = "Debug info";
+		$fields['debug']['value'] = (isset($instance['show_debug']) ? $instance['show_debug'] : FALSE);
+
 		foreach($fields as $field)
 		{
 			$checked = $field['value'] ? " checked='checked'": "";
@@ -767,12 +771,13 @@ HTML;
 		}
 	}
 
-	public function update( $new_instance, $old_instance )
+	public function update($new_instance, $old_instance)
 	{
 		$instance = array(
-			'show_username' => ((int) $new_instance['show_username']),
-			'show_groups' => ((int) $new_instance['show_groups']),
-			'show_link' => ((int) $new_instance['show_link']),
+			'show_username' => isset($new_instance['show_username']),
+			'show_groups' => isset($new_instance['show_groups']),
+			'show_link' => isset($new_instance['show_link']),
+			'show_debug' => isset($new_instance['show_debug']),
 		);
 		return $instance;
 	}
