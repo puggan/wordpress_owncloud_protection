@@ -2,18 +2,23 @@
 /**
 * @package Owncloud Protection
 * @author Puggan
-* @version 0.0.1-20150128
+* @version 1.0.0-20150201
 **/
 /*
 Plugin Name: Owncloud Protection
+Plugin URI: https://github.com/puggan/wordpress_owncloud_protection
 Description: Use owncloud as permission check for pages
-Version: 0.0.1-20150128
+Version: 1.0.0-20150201
 Author: Puggan
 Author URI: http://blog.puggan.se
 */
 
 // Set a constant for current version
-DEFINE("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '0.0.1');
+define("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '1.0.0');
+
+define("DEFAULT_OPTION_OWNCLOUD_BLOCK", FALSE);
+define("DEFAULT_OPTION_LOGIN_URL", "/?redirect_url=%1");
+define("DEFAULT_OPTION_OWNCLOUD_URL", "/index.php/apps/files/");
 
 class oc_protect
 {
@@ -31,9 +36,9 @@ class oc_protect
 		global $wpdb;
 
 		// fetch global settings
-		$this->settings['global_block'] = get_option("oc_protect_global_block", FALSE);
-		$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
-		$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/?redirect_url=%1");
+		$this->settings['global_block'] = get_option("oc_protect_global_block", DEFAULT_OPTION_OWNCLOUD_BLOCK);
+		$this->settings['login_oc_url'] = get_option("oc_protect_login_url", DEFAULT_OPTION_LOGIN_URL);
+		$this->settings['oc_url'] = get_option("oc_protect_url", DEFAULT_OPTION_OWNCLOUD_URL);
 
 		// look for a owncloud session cookie
 		foreach(array_keys($_COOKIE) AS $cookie_key)
@@ -364,39 +369,62 @@ class oc_protect
 		}
 	}
 
+	/**
+	 * Register widget at wordpress 'widgets_init'-trigger
+	 **/
 	public function register_widgets()
 	{
 		register_widget( 'Owncloud_User_Status_Widget' );
 	}
 
+	/**
+	 * Register metabox at wordpress 'add_meta_boxes_page'-trigger
+	 **/
 	public function register_meta_box()
 	{
 		add_meta_box("oc_page_permission", "Owncloud permissions", array($this, "meta_box_page_edit"), 'page', 'side');
 	}
 
+	/**
+	 * Register setting page at wordpress 'admin_menu'-trigger
+	 **/
 	public function register_setting_page()
 	{
 		add_submenu_page("options-general.php", "Owncloud protection settings", "Owncloud", 'manage_options', "owncloud-prot", array($this, "setting_page"));
 	}
 
+	/**
+	 * Content for meta-box at edit-page
+	 *
+	 * @param $current_post the post getting edited, see function add_meta_box()
+	 **/
 	public function meta_box_page_edit($current_post)
 	{
+		// fetch current values
 		$read_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
 		$edit_permission = get_post_meta($current_post->ID, '_oc_edit_permission', TRUE);
 
-		wp_nonce_field( 'oc_permission', 'oc_permission_nonce' );
+		// add a nonce, as it was a recomendated protection
+		wp_nonce_field('oc_permission', 'oc_permission_nonce');
 
+		// add a input for read permission
 		echo "<div>";
 		echo '<label for="oc_read_permission">Read permission:</label> ';
-		echo '<input type="text" id="oc_read_permission" name="oc_read_permission" value="' . esc_attr( $read_permission ) . '" />';
+		echo '<input type="text" id="oc_read_permission" name="oc_read_permission" value="' . esc_attr($read_permission) . '" />';
 		echo "</div>";
 
+		// add a input for edit permission
 		echo "<div>";
 		echo '<label for="oc_edit_permission">Edit permission:</label> ';
-		echo '<input type="text" id="oc_edit_permission" name="oc_edit_permission" value="' . esc_attr( $edit_permission ) . '" />';
+		echo '<input type="text" id="oc_edit_permission" name="oc_edit_permission" value="' . esc_attr($edit_permission) . '" />';
 		echo "</div>";
 	}
 
+	/**
+	 * fetch our extra filed from edit page
+	 *
+	 * @param $page_id the id of the page that was edited, see action 'save_post'
+	 **/
 	public function save_page_permissions($page_id)
 	{
 		// check for posible errors and verify that its a real permitted save page
@@ -417,36 +445,63 @@ class oc_protect
 		update_post_meta($page_id, '_oc_edit_permission', $edit_permission);
 	}
 
+
+	/**
+	 * print setting-page added by add_submenu_page()
+	 **/
 	public function setting_page()
 	{
-		echo '<div class="wrap"><div id="icon-tools" class="icon32"></div>';
+		// Add title/header
 		echo '<h2>Owncloud protection settings</h2>';
-		echo '<form method="post" action="">';
-		echo '</div>';
 
+		// show error if permission deined
 		if(!current_user_can('manage_options'))
 		{
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
 
-		wp_nonce_field( 'owncloud-prot-settings', 'owncloud_prot_settings_nonce' );
-
-		if($_POST['save'])
+		// Did user press the save-button?
+		if(isset($_POST['save']))
 		{
+			// check nonce
 			if(wp_verify_nonce($_POST['owncloud_prot_settings_nonce'], 'owncloud-prot-settings'))
 			{
-				update_option("oc_protect_global_block", $_POST["oc_protect_global_block"]);
-				update_option("oc_protect_login_url", $_POST["oc_protect_login_url"]);
-				update_option("oc_protect_url", $_POST["oc_protect_url"]);
+				// variable to store results
+				$results = array();
+				// Save all fields
+				$results[] = update_option("oc_protect_global_block", $_POST["oc_protect_global_block"]);
+				$results[] = update_option("oc_protect_login_url", $_POST["oc_protect_login_url"]);
+				$results[] = update_option("oc_protect_url", $_POST["oc_protect_url"]);
 
-				$this->settings['global_block'] = get_option("oc_protect_global_block", TRUE);
-				$this->settings['oc_url'] = get_option("oc_protect_url", "/index.php/apps/files/");
-				$this->settings['login_oc_url'] = get_option("oc_protect_login_url", "/");
+				//count changes
+				$changes = array_sum($results);
 
-				echo '<div class="updated"><p><strong>Settings saved</strong></p></div>';
+				// if chnages was mage
+				if($changes)
+				{
+					// Reload setting
+					$this->settings['global_block'] = get_option("oc_protect_global_block", DEFAULT_OPTION_OWNCLOUD_BLOCK);
+					$this->settings['login_oc_url'] = get_option("oc_protect_login_url", DEFAULT_OPTION_LOGIN_URL);
+					$this->settings['oc_url'] = get_option("oc_protect_url", DEFAULT_OPTION_OWNCLOUD_URL);
+
+					// Tell user we saved the fields
+					echo "<div class='updated'><p><strong>Settings saved, {$changes} changed</strong></p></div>";
+				}
+				else
+				{
+					// Tell user we tried to saved the fields
+					echo "<div class='updated'><p><strong>Saved, but no changes was made</strong></p></div>";
+				}
 			}
 		}
 
+		// Add form
+		echo '<form method="post" action="">';
+
+		// add a nonce field for extra protection
+		wp_nonce_field( 'owncloud-prot-settings', 'owncloud_prot_settings_nonce' );
+
+		// add option for global_block, allow guest or not
 		echo "<div>";
 		echo "<label for='oc_protect_global_block' style='width: 100px; display: inline-block;'>Guests</label>";
 		echo "<select name='oc_protect_global_block'>";
@@ -455,35 +510,56 @@ class oc_protect
 		echo "</select>";
 		echo "</div>";
 
+		// add field for login url
 		echo "<div>";
 		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>Login url</label>";
-		echo "<input name='oc_protect_login_url' value='{$this->settings['login_oc_url']}' />";
+		echo "<input name='oc_protect_login_url' value='" . esc_attr($this->settings['login_oc_url']) . "' />";
 		echo "</div>";
 
+		// add field for owncloud url
 		echo "<div>";
 		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>App url</label>";
-		echo "<input name='oc_protect_url' value='{$this->settings['oc_url']}' />";
+		echo "<input name='oc_protect_url' value='" . esc_attr($this->settings['oc_url']) . "' />";
 		echo "</div>";
 
+		// add button
+		echo "<div>";
 		echo "<input type='submit' name='save' class='button-primary' value='Save' />";
-		echo "</form>";
 		echo "</div>";
+
+		// end form
+		echo "</form>";
 	}
 
+	/**
+	 * Adds a permission check before post/pages are deliverd.
+	 * using the filter 'posts_results'
+	 *
+	 * @param $posts the list of posts, see filter 'posts_results'
+	 * @param $query_object the query that generated the list of post, see filter 'posts_results'
+	 * @return filtered list of @posts
+	 **/
 	public function filter_posts($posts, $query_object)
 	{
-// 		if(!$this->admin)
-		if($this->user_id != 'root')
+		// don't filter for owncloud admins
+		if(!$this->admin)
 		{
+			// check all posts, one by one
 			foreach($posts as $index => $current_post)
 			{
+				// only filter pages
 				if($current_post->post_type == 'page')
 				{
+					// fetch read permissons for the current page
 					$read_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
+
+					// if page have readpermissions set
 					if($read_permission)
 					{
+						// do a permisson check against that list of permitted targets
 						if(!$this->check_permission_list($read_permission))
 						{
+							// remove page from list, if owncloud user not in the list of permitted targets
 							unset($posts[$index]);
 						}
 					}
@@ -491,24 +567,38 @@ class oc_protect
 			}
 		}
 
+		// pass the rest of the post forward
 		return $posts;
 	}
 
+	/**
+	 * Adds a permission check before menus are deliverd.
+	 * using the filter 'wp_nav_menu_objects'
+	 *
+	 * @param $menu the list of menu options, see filter 'wp_nav_menu_objects'
+	 * @return filtered list of @posts
+	 **/
 	public function filter_menu($menu)
 	{
-// 		if(!$this->admin)
-		if($this->user_id != 'root')
+		// don't filter for owncloud admins
+		if(!$this->admin)
 		{
+			// check all menu options, one by one
 			foreach($menu as $index => $current_menu)
 			{
+				// only filter menuoptions pointing to pages
 				if($current_menu->object == 'page')
 				{
-
+					// fetch read permissons for the current page
 					$read_permission = get_post_meta($current_menu->object_id, '_oc_read_permission', TRUE);
+
+					// if page have readpermissions set
 					if($read_permission)
 					{
+						// do a permisson check against that list of permitted targets
 						if(!$this->check_permission_list($read_permission))
 						{
+							// remove menu option from list, if owncloud user not in the list of permitted targets
 							unset($menu[$index]);
 						}
 					}
@@ -516,18 +606,37 @@ class oc_protect
 			}
 		}
 
+		// pass the rest of the menu options forward
 		return $menu;
 	}
 
+	/**
+	 * disable edit page when user don't have permission
+	 * using action 'post_edit_form_tag'
+	 *
+	 * @param $current_post the post that someone tries to edit
+	 **/
 	public function filter_edit_page($current_post)
 	{
-// 		if($this->admin)
-		if($this->user_id == 'root') return TRUE;
+		// Allow admins
+		if($this->admin) return TRUE;
+
+		// Only filter pages
 		if($current_post->post_type != 'page') return TRUE;
+
+		// fetch list of edit permissons
 		$edit_permission = get_post_meta($current_post->ID, '_oc_edit_permission', TRUE);
+
+		// if edit permissions not set, use read permissions
 		if(!$edit_permission) $edit_permission = get_post_meta($current_post->ID, '_oc_read_permission', TRUE);
+
+		// Allow edit if page have neither edit or read permissons
 		if(!$edit_permission) return TRUE;
+
+		// Allow if owncloud user in allowed targets
 		if($this->check_permission_list($edit_permission)) return TRUE;
+
+		// Disable edit if there was no reason to allow edit, using code 403 'Permission Denied'
 		wp_die("Permission denied, you not allowed to edit this page.", "Permission denied", array("response" => 403));
 	}
 }
