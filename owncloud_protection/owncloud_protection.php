@@ -536,19 +536,19 @@ class oc_protect
 
 		// add field for login url
 		echo "<div>";
-		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>" . _x('Login url', 'input leabel', 'owncloud_protection') . "</label>";
+		echo "<label for='oc_protect_login_url' style='width: 100px; display: inline-block;'>" . _x('Login url', 'input label', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_protect_login_url' value='" . esc_attr($this->settings['login_oc_url']) . "' />";
 		echo "</div>";
 
 		// add field for owncloud url
 		echo "<div>";
-		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>" . _x('App url', 'input leabel', 'owncloud_protection') . "</label>";
+		echo "<label for='oc_protect_url' style='width: 100px; display: inline-block;'>" . _x('App url', 'input label', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_protect_url' value='" . esc_attr($this->settings['oc_url']) . "' />";
 		echo "</div>";
 
 		// add field for oc_db_prefix
 		echo "<div>";
-		echo "<label for='oc_db_prefix' style='width: 100px; display: inline-block;'>" . _x('DB Prefix', 'input leabel', 'owncloud_protection') . "</label>";
+		echo "<label for='oc_db_prefix' style='width: 100px; display: inline-block;'>" . _x('DB Prefix', 'input label', 'owncloud_protection') . "</label>";
 		echo "<input name='oc_db_prefix' value='" . esc_attr($this->settings['oc_db_prefix']) . "' />";
 		echo "</div>";
 

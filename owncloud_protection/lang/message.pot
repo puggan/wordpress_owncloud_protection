@@ -1,0 +1,221 @@
+# Copyright (C) 2015 Owncloud Protection
+# This file is distributed under the same license as the Owncloud Protection package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Owncloud Protection 1.0.0-20150201\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/"
+"owncloud_protection\n"
+"POT-Creation-Date: 2015-02-01 17:23:58+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: owncloud_protection.php:63
+msgid "No oc-cookie found"
+msgstr ""
+
+#: owncloud_protection.php:90
+msgid "session_start() failed"
+msgstr ""
+
+#: owncloud_protection.php:96
+msgid "$_SESSION is empty"
+msgstr ""
+
+#: owncloud_protection.php:107
+msgid "No user_id found"
+msgstr ""
+
+#: owncloud_protection.php:143
+msgid "DB-error:"
+msgstr ""
+
+#: owncloud_protection.php:359
+msgid "Logged out from owncloud."
+msgstr ""
+
+#: owncloud_protection.php:359
+msgid "Logged out"
+msgstr ""
+
+#: owncloud_protection.php:383
+msgid "Permission denied, global_block for non owncloud users."
+msgstr ""
+
+#: owncloud_protection.php:404
+msgctxt "metabox title"
+msgid "Owncloud permissions"
+msgstr ""
+
+#: owncloud_protection.php:474
+msgid "Owncloud protection settings"
+msgstr ""
+
+#: owncloud_protection.php:412
+msgctxt "menu row"
+msgid "Owncloud"
+msgstr ""
+
+#: owncloud_protection.php:431
+msgctxt "input label"
+msgid "Read permission"
+msgstr ""
+
+#: owncloud_protection.php:437
+msgctxt "input label"
+msgid "Edit permission"
+msgstr ""
+
+#: owncloud_protection.php:480
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: owncloud_protection.php:511
+msgid "Settings saved, %d value changed"
+msgid_plural "Settings saved, %d values changed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: owncloud_protection.php:517
+msgid "Saved, but no changes was made"
+msgstr ""
+
+#: owncloud_protection.php:532
+msgctxt "settings value"
+msgid "Allow guests"
+msgstr ""
+
+#: owncloud_protection.php:533
+msgctxt "settings value"
+msgid "Only loggedin users"
+msgstr ""
+
+#: owncloud_protection.php:539
+msgctxt "input label"
+msgid "Login url"
+msgstr ""
+
+#: owncloud_protection.php:545
+msgctxt "input label"
+msgid "App url"
+msgstr ""
+
+#: owncloud_protection.php:551
+msgctxt "input label"
+msgid "DB Prefix"
+msgstr ""
+
+#: owncloud_protection.php:557
+msgctxt "button"
+msgid "Save"
+msgstr ""
+
+#: owncloud_protection.php:670
+msgid "Permission denied, you not allowed to edit this page."
+msgstr ""
+
+#: owncloud_protection.php:670
+msgid "Permission denied"
+msgstr ""
+
+#: owncloud_protection.php:686
+msgctxt "widget name"
+msgid "Owncloud user status"
+msgstr ""
+
+#: owncloud_protection.php:687
+msgid "Show status for loged in owncloud user"
+msgstr ""
+
+#: owncloud_protection.php:712
+msgctxt "label"
+msgid "User"
+msgstr ""
+
+#: owncloud_protection.php:727
+msgctxt "label"
+msgid "Groups"
+msgstr ""
+
+#: owncloud_protection.php:727
+msgctxt "group count"
+msgid "(none)"
+msgstr ""
+
+#: owncloud_protection.php:735
+msgctxt "link"
+msgid "Show filelist"
+msgstr ""
+
+#: owncloud_protection.php:742
+msgctxt "error"
+msgid "Not logged in"
+msgstr ""
+
+#: owncloud_protection.php:751
+msgctxt "link"
+msgid "Login"
+msgstr ""
+
+#: owncloud_protection.php:762
+msgctxt "label"
+msgid "Page"
+msgstr ""
+
+#: owncloud_protection.php:799
+msgctxt "label permissionlist"
+msgid "Read"
+msgstr ""
+
+#: owncloud_protection.php:800
+msgctxt "label permissionlist"
+msgid "Edit"
+msgstr ""
+
+#: owncloud_protection.php:807
+msgctxt "label"
+msgid "Error"
+msgstr ""
+
+#: owncloud_protection.php:826
+msgctxt "label setting"
+msgid "Show username"
+msgstr ""
+
+#: owncloud_protection.php:832
+msgctxt "label setting"
+msgid "Show groups"
+msgstr ""
+
+#: owncloud_protection.php:838
+msgctxt "label setting"
+msgid "Show link"
+msgstr ""
+
+#: owncloud_protection.php:844
+msgctxt "label setting"
+msgid "Debug info"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Owncloud Protection"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/puggan/wordpress_owncloud_protection"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Use owncloud as permission check for pages"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Puggan"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://blog.puggan.se"
+msgstr ""
