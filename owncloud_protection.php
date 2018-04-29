@@ -2,13 +2,13 @@
 /**
 * @package Owncloud Protection
 * @author Puggan
-* @version 1.0.0-20150201
+* @version 1.0.1
 **/
 /*
 Plugin Name: Owncloud Protection
 Plugin URI: https://github.com/puggan/wordpress_owncloud_protection
 Description: Use owncloud as permission check for pages
-Version: 1.0.0-20150201
+Version: 1.0.1
 Author: Puggan
 Author URI: http://blog.puggan.se
 Text Domain: owncloud_protection
@@ -16,7 +16,7 @@ Domain Path: /lang
 */
 
 // Set a constant for current version
-define("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '1.0.0');
+define("OWNCLOUD_PROTECTION_PLUGIN_VERSION", '1.0.1');
 
 define("DEFAULT_OPTION_OWNCLOUD_BLOCK", FALSE);
 define("DEFAULT_OPTION_LOGIN_URL", "/?redirect_url=%1");

@@ -1,0 +1,9 @@
+{
+  "name": "puggan/wordpress_owncloud_protection",
+  "description": "Use owncloud as permission check for wordpress pages",
+  "type": "wordpress-plugin",
+  "require": {
+    "composer/installers": "~1.0",
+    "SpiroAB/wp_version_tracker": "~1.0"
+  }
+}
